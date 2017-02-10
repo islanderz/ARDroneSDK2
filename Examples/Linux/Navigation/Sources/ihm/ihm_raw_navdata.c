@@ -21,8 +21,7 @@
 
 //The MQTT Client. This client publishes navdata and subscribes to several incoming MQTT messages from the bridge.
 struct mosquitto *navmosq = NULL;
-
-
+ 
 #define MAX_FIELDS (100)
 GtkTreeStore  *treestore;
 GtkTreeIter   sequence_number;
@@ -49,7 +48,7 @@ static void setfield(int tag,char * value,int*counter)
 //This is the function that handles the incoming mqtt messages. These messages are routed from the tum_ardrone
 //ROS package. The takeoff/land/reset/cmd_vel messages are then mapped to the relevant commands from the ARDroneLib
 //and called. The ARDroneLib handles the messages going through to the ARDrone.
-void mqtt_message_callback(struct mosquitto *mosq, void *obj, 
+void mqtt_message_callback(void *obj, 
     const struct mosquitto_message *message)
 {
   // Note: nothing in the Mosquitto docs or examples suggests that we
@@ -103,16 +102,22 @@ void mqtt_message_callback(struct mosquitto *mosq, void *obj,
 }
 
 //Callback when the mqtt client successfully subscribes to a message
-void mqtt_subscribe_callback(struct mosquitto *mosq, void *obj, int mid, int qos_count, const int *granted_qos)
+void mqtt_subscribe_callback(void *obj, uint16_t mid, int qos_count, const uint8_t *granted_qos)
 {
   printf("Subscribe succeeded\n");
 }
 
-//Callback when the mqtt client successfully connects
-void mqtt_connect_callback(struct mosquitto *mosq, void *obj, int rc)
+void mqtt_connect_callback(void *userdata, int result)
 {
-  printf("MQTT Connected with code: %d\n", rc);
+	
+	if(!result){
+ 
+	}else{
+		fprintf(stderr, "Connect failed\n");
+	}
 }
+
+
 
 static GtkTreeModel *
 create_and_fill_model (void)
@@ -256,7 +261,7 @@ navdata_ihm_raw_navdata_update ( const navdata_unpacked_t* const navdata )
   {
    
     //This call is to pump the callbacks of data received over MQTT. 
-    mosquitto_loop_start(navmosq);
+    //mosquitto_loop_start(navmosq);
 
     //serializing using binn library.
 
@@ -292,9 +297,12 @@ navdata_ihm_raw_navdata_update ( const navdata_unpacked_t* const navdata )
     binn_object_set_float(obj, "phi", nd->phi);
     binn_object_set_float(obj, "psi", nd->psi);
     binn_object_set_uint32(obj, "altitude", nd->altitude);
-    binn_object_set_float(obj, "vx", nd->vx);
-    binn_object_set_float(obj, "vy", nd->vy);
-    binn_object_set_float(obj, "vz", nd->vz);
+    binn_object_set_float(obj, "vx", navdata->navdata_demo.vx);
+
+    // printf ("navdata->navdata_demo.vx: %4.3f  \n", navdata->navdata_demo.vx);
+	
+    binn_object_set_float(obj, "vy", navdata->navdata_demo.vy);
+    binn_object_set_float(obj, "vz", navdata->navdata_demo.vz);
     binn_object_set_float(obj, "ax", navdata->navdata_phys_measures.phys_accs[ACC_X]);
     binn_object_set_float(obj, "ay", navdata->navdata_phys_measures.phys_accs[ACC_Y]);
     binn_object_set_float(obj, "az", navdata->navdata_phys_measures.phys_accs[ACC_Z]);
@@ -392,7 +400,7 @@ int navdata_ihm_raw_navdata_init ( void*v ) {
   //initiailize the mosquitto library
   mosquitto_lib_init();
 
-  navmosq = mosquitto_new ("NavClient", true, NULL);
+  navmosq = mosquitto_new ("NavClient", NULL);
 
   if (!navmosq)
   {
@@ -408,13 +416,14 @@ int navdata_ihm_raw_navdata_init ( void*v ) {
   mosquitto_message_callback_set (navmosq, mqtt_message_callback);
 
   //Callback function on successful connect
-  mosquitto_connect_callback_set (navmosq, mqtt_connect_callback);
+
+  mosquitto_connect_callback_set(navmosq, mqtt_connect_callback);
 
   mosquitto_username_pw_set (navmosq, "admin", "admin");
 
   //Initiate the Connection of the mqtt client
-  int ret = mosquitto_connect_async (navmosq, "localhost", 1883, 0);
-
+  int ret = mosquitto_connect (navmosq, "192.150.1.6", 1883, 0, true);
+ 
   if (ret)
   {
     fprintf (stderr, "Navclient: Can't connect to Mosquitto server\n");

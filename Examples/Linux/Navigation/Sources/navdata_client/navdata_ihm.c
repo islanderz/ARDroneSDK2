@@ -269,6 +269,7 @@ C_RESULT navdata_ihm_process( const navdata_unpacked_t* const pnd )
   ihm_CA[KIHM_CURVE_VX].tval[1][ihm_val_idx] = (double) (pnd->navdata_demo.vx);      // Fusion Vx
   ihm_CA[KIHM_CURVE_VY].tval[1][ihm_val_idx] = (double) (pnd->navdata_demo.vy);      // Fusion Vy
 
+
 //#ifdef PC_USE_VISION
 
   /* Copy the detection results from the navdata

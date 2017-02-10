@@ -12,7 +12,7 @@ MQTTAsync client;
 /* Initialization local variables before event loop  */
 inline C_RESULT demo_navdata_client_init( void* data )
 {
-  client = initiateMQTTConnection("tcp://unmand.io:1884","ArdroneSDkNavdataClient");
+  client = initiateMQTTConnection("tcp://192.150.1.6:1883","ArdroneSDkNavdataClient");
   return C_OK;
 }
 
@@ -61,7 +61,7 @@ inline C_RESULT demo_navdata_client_process( const navdata_unpacked_t* const nav
     binn_object_set_uint32(obj, "altitude", nd->altitude);
     binn_object_set_float(obj, "vx", nd->vx);
     binn_object_set_float(obj, "vy", nd->vy);
-    binn_object_set_float(obj, "vz", nd->vz);
+    binn_object_set_float(obj, "vz", nd->vz); 
     //quick grep in tum_ardrone says we don't need this: HS02082016
     //navdata->navdata_phys_measures.phys_accs[ACC_X],
     //navdata->navdata_phys_measures.phys_accs[ACC_Y],
@@ -101,7 +101,7 @@ inline C_RESULT demo_navdata_client_process( const navdata_unpacked_t* const nav
 	printf("Battery level : %i mV\n",nd->vbat_flying_percentage);
 	printf("Orientation   : [Theta] %4.3f  [Phi] %4.3f  [Psi] %4.3f\n",nd->theta,nd->phi,nd->psi);
 	printf("Altitude      : %i\n",nd->altitude);
-	printf("Speed         : [vX] %4.3f  [vY] %4.3f  [vZPsi] %4.3f\n",nd->theta,nd->phi,nd->psi);
+	printf("Speed         : [vX] %4.3f  [vY] %4.3f  [vZPsi] %4.3f\n",nd->vx,nd->vy,nd->vz);
 
 	printf("\033[8A");
 

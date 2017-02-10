@@ -126,7 +126,7 @@ C_RESULT output_gtk_stage_open(vp_stages_gtk_config_t *cfg)//, vp_api_io_data_t 
   //Initialize the mosquitto library
   mosquitto_lib_init();
 
-  vidmosq = mosquitto_new ("VidClient", true, NULL);
+  vidmosq = mosquitto_new("VidClient", NULL);
 
 	if (!vidmosq)
   {
@@ -136,7 +136,7 @@ C_RESULT output_gtk_stage_open(vp_stages_gtk_config_t *cfg)//, vp_api_io_data_t 
   mosquitto_username_pw_set (vidmosq, "admin", "admin");
 
   //Connect the mosquitto client to the broker
-  int ret = mosquitto_connect_async (vidmosq, "localhost", 1883, 0);
+  int ret = mosquitto_connect(vidmosq, "192.150.1.6", 1883, 0, true);
 
   if (ret)
   {
